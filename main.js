@@ -12,7 +12,7 @@ const rows = H / unit;
 //with use this consts for the movement system
 const fpsScale = 10;  //Increasing the x every frame and dividing it by a const, we simulate the slowing down of the game
 var x = 0;
-var newPos = new Phaser.Point(0,0); 
+var newPos = new Phaser.Point(0, 0);
 var tail = [];
 
 //Player score
@@ -39,11 +39,11 @@ function create() {
 
     player = game.add.image(W / 2, H / 2, 'snake');
 
-    apple = game.add.image(0 , 0 , 'food');
+    apple = game.add.image(0, 0, 'food');
 
     apple.position = randomPos();
 
-    console.log(rows, columns , apple.x, apple.y)
+    console.log(rows, columns, apple.x, apple.y)
 
     cursors = game.input.keyboard.createCursorKeys();
 
@@ -53,78 +53,101 @@ function update() {
 
     checkMovement();
 
-    if(x % fpsScale == 0){
+    deathByWall();
+
+    if (x % fpsScale == 0) {
 
         player.position.add(newPos.x, newPos.y);
 
+        for(var i = 0; i < tail.length ; i++){
+
+            tail[i].position.add(newPos);
+
+        }
+
     }
 
-    if(isColliding(player, apple)){
+    if (isColliding(player, apple)) {
 
         score++;
 
         apple.position = randomPos();
 
     }
-    
+
     x++;
 
 }
 //Here we check the inputs of the player and making the player move
 function checkMovement() {
 
-    if (cursors.up.isDown ) {
+    if (cursors.up.isDown) {
 
-        newPos = new Phaser.Point(0 , -unit);
-
-        inputRecived = true;
-    }
-    else if (cursors.down.isDown ) {
-
-        newPos = new Phaser.Point(0 , unit);
+        newPos = new Phaser.Point(0, -unit);
 
         inputRecived = true;
     }
-    else if (cursors.left.isDown ) {
+    else if (cursors.down.isDown) {
 
-        newPos = new Phaser.Point(-unit , 0);
+        newPos = new Phaser.Point(0, unit);
 
         inputRecived = true;
     }
-    else if (cursors.right.isDown ) {
+    else if (cursors.left.isDown) {
 
-        newPos = new Phaser.Point(unit , 0);
-        
+        newPos = new Phaser.Point(-unit, 0);
+
+        inputRecived = true;
+    }
+    else if (cursors.right.isDown) {
+
+        newPos = new Phaser.Point(unit, 0);
+
         inputRecived = true;
     }
 
 }
 
-function isColliding(fristObj , secondObj){
-    if(fristObj.x == secondObj.x && fristObj.y == secondObj.y){
+function isColliding(fristObj, secondObj) {
+    if (fristObj.x == secondObj.x && fristObj.y == secondObj.y) {
 
-        tail.push(game.add.image(player.position.x, player.position.y, 'snake'))
+        tail.push(game.add.image(-newPos, 'snake'))
 
         return true;
 
-    }else{
+    } else {
 
         return false;
-        
+
     }
 }
 
-function tailMovement(){
+function tailMovement() {
 
-    
+
 
 }
 
+function deathByWall() {
+    if (player.position.x > W ||
+        player.position.x < 0 ||
+        player.position.y > H ||
+        player.position.y < 0) {
+
+        player.position.x = W / 2;
+        player.position.y = H / 2;
+
+        console.log("You've made a score of score " + score);
+
+        score = 0;
+
+    }
+}
 
 //Random Position for the apple.
-function randomPos(){
+function randomPos() {
     xPos = Math.floor(Math.random() * columns);
     yPos = Math.floor(Math.random() * rows);
 
-    return new Phaser.Point(xPos * 50, yPos* 50);
+    return new Phaser.Point(xPos * 50, yPos * 50);
 }
