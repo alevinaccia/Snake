@@ -14,6 +14,7 @@ const fpsScale = 10;  //Increasing the x every frame and dividing it by a const,
 var x = 0;
 var newPos = new Phaser.Point(0, 0);
 var tail = [];
+var life = 0;
 
 //Player score
 var score = 0;
@@ -55,21 +56,33 @@ function update() {
 
     deathByWall();
 
+    deathByTail();
+
     if (x % fpsScale == 0) {
 
-        player.position.add(newPos.x, newPos.y);
+        var pos = player.position;
 
-        for(var i = 0; i < tail.length ; i++){
+        tail.push(game.add.sprite(pos.x, pos.y, 'snake'));
 
-            tail[i].position.add(newPos);
+        if (tail.length > life) {
+
+            var elementsToRemove = tail.splice(0, tail.length - life);
+
+            for (i = 0; i < elementsToRemove.length; i++) {
+                elementsToRemove[i].destroy();
+            }
 
         }
+
+        player.position.add(newPos.x, newPos.y);
 
     }
 
     if (isColliding(player, apple)) {
 
         score++;
+
+        life++;
 
         apple.position = randomPos();
 
@@ -85,33 +98,27 @@ function checkMovement() {
 
         newPos = new Phaser.Point(0, -unit);
 
-        inputRecived = true;
     }
     else if (cursors.down.isDown) {
 
         newPos = new Phaser.Point(0, unit);
 
-        inputRecived = true;
     }
     else if (cursors.left.isDown) {
 
         newPos = new Phaser.Point(-unit, 0);
 
-        inputRecived = true;
     }
     else if (cursors.right.isDown) {
 
         newPos = new Phaser.Point(unit, 0);
 
-        inputRecived = true;
     }
 
 }
 
 function isColliding(fristObj, secondObj) {
     if (fristObj.x == secondObj.x && fristObj.y == secondObj.y) {
-
-        tail.push(game.add.image(-newPos, 'snake'))
 
         return true;
 
@@ -122,26 +129,28 @@ function isColliding(fristObj, secondObj) {
     }
 }
 
-function tailMovement() {
-
-
-
-}
-
 function deathByWall() {
     if (player.position.x > W ||
         player.position.x < 0 ||
         player.position.y > H ||
         player.position.y < 0) {
 
-        player.position.x = W / 2;
-        player.position.y = H / 2;
-
-        console.log("You've made a score of score " + score);
-
-        score = 0;
+        die();
 
     }
+}
+
+function die() {
+
+    player.position.x = W / 2;
+    player.position.y = H / 2;
+
+    console.log("You've made a score of " + score);
+
+    life = 0;
+
+    score = 0;
+
 }
 
 //Random Position for the apple.
@@ -150,4 +159,16 @@ function randomPos() {
     yPos = Math.floor(Math.random() * rows);
 
     return new Phaser.Point(xPos * 50, yPos * 50);
+}
+
+function deathByTail() {
+    for (var i = 0; i < tail.length; i++) {
+        var pos = tail[i].position;
+
+        if (pos.x == player.position.x && pos.y == player.position.y) {
+
+            die();
+
+        }
+    }
 }
